@@ -9,7 +9,10 @@ export async function analyze(req: AnalyzeRequest): Promise<AnalyzeResponse> {
     body: JSON.stringify(req),
   });
   if (!res.ok) {
-    throw new Error(`Analyze failed: ${res.status} ${res.statusText}`);
+    const body = await res.text().catch(() => '');
+    throw new Error(
+      `Analyze failed: ${res.status} ${res.statusText} — ${body}`,
+    );
   }
   return (await res.json()) as AnalyzeResponse;
 }

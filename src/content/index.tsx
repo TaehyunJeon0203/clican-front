@@ -9,14 +9,26 @@ const mountedHosts = new WeakSet<HTMLElement>();
 const roots: Root[] = [];
 
 function injectStars(blockEl: HTMLElement, score: number, reason: string) {
-  const h3 = blockEl.querySelector<HTMLHeadingElement>('h3');
-  if (!h3 || !h3.parentElement) return;
+  if (blockEl.querySelector('[data-clican="stars"]')) return;
 
   const host = document.createElement('span');
   host.dataset.clican = 'stars';
-  if (mountedHosts.has(host)) return;
+  host.style.display = 'inline-flex';
+  host.style.alignItems = 'center';
+  host.style.marginLeft = '8px';
+  host.style.verticalAlign = 'middle';
 
-  h3.parentElement.insertBefore(host, h3.nextSibling);
+  const cite = blockEl.querySelector('cite');
+  const urlRow = cite?.closest('div');
+  const moreBtn = urlRow?.querySelector('[role="button"]') as HTMLElement | null;
+
+  if (urlRow && moreBtn) {
+    urlRow.insertBefore(host, moreBtn);
+  } else if (urlRow) {
+    urlRow.appendChild(host);
+  } else {
+    blockEl.insertBefore(host, blockEl.firstChild);
+  }
 
   const shadow = host.attachShadow({ mode: 'open' });
   const container = document.createElement('span');
@@ -30,18 +42,30 @@ function injectStars(blockEl: HTMLElement, score: number, reason: string) {
 }
 
 async function run() {
+  console.log('[Clican] content script loaded');
+
   const parsed = parseGoogleResults();
-  if (parsed.length === 0) return;
+  console.log('[Clican] parsed results:', parsed.length, parsed);
+
+  if (parsed.length === 0) {
+    console.warn(
+      '[Clican] no results parsed — SERP DOM selector mismatch?',
+    );
+    return;
+  }
 
   const request: AnalyzeRequest = {
     query: extractQuery(),
     results: parsed.map((p) => p.dto),
   };
+  console.log('[Clican] sending request:', request);
 
   const message: RuntimeMessage = { type: 'ANALYZE', payload: request };
   const response = (await chrome.runtime.sendMessage(message)) as
     | RuntimeResponse
     | undefined;
+
+  console.log('[Clican] response:', response);
 
   if (!response) {
     console.warn('[Clican] no response from background');
@@ -57,6 +81,7 @@ async function run() {
     if (!target) continue;
     injectStars(target.container, trust.score, trust.reason);
   }
+  console.log('[Clican] injected', response.data.results.length, 'badges');
 }
 
-run().catch((err) => console.error('[Clican]', err));
+run().catch((err) => console.error('[Clican] fatal:', err));

@@ -33,8 +33,9 @@ export function parseGoogleResults(): ParsedResult[] {
     const snippetEl =
       block.querySelector<HTMLElement>('[data-sncf]') ??
       block.querySelector<HTMLElement>('.VwiC3b') ??
-      block.querySelector<HTMLElement>('.lEBKkf');
-    const snippet = snippetEl?.textContent?.trim() ?? '';
+      block.querySelector<HTMLElement>('.lEBKkf') ??
+      block.querySelector<HTMLElement>('.MUxGbd');
+    const snippet = snippetEl?.textContent?.trim() || title || url;
 
     seen.add(url);
     block.setAttribute(SEEN_ATTR, '1');
