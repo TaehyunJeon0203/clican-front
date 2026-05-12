@@ -1,0 +1,1 @@
+{"root":["./src/background.ts","./src/manifest.config.ts","./src/content/stars.tsx","./src/content/index.tsx","./src/content/parsers/google.ts","./src/lib/api.ts","./src/lib/score.ts","./src/popup/app.tsx","./src/popup/main.tsx","./src/types/api.ts","./src/types/messages.ts","./vite.config.ts"],"version":"5.9.3"}
