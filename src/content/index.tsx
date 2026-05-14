@@ -8,37 +8,26 @@ import type { RuntimeMessage, RuntimeResponse } from '@/types/messages';
 const mountedHosts = new WeakSet<HTMLElement>();
 const roots: Root[] = [];
 
-function injectStars(blockEl: HTMLElement, score: number, reason: string) {
-  if (blockEl.querySelector('[data-clican="stars"]')) return;
-
-  const host = document.createElement('span');
-  host.dataset.clican = 'stars';
-  host.style.display = 'inline-flex';
-  host.style.alignItems = 'center';
-  host.style.marginLeft = '8px';
-  host.style.verticalAlign = 'middle';
-
-  const cite = blockEl.querySelector('cite');
-  const urlRow = cite?.closest('div');
-  const moreBtn = urlRow?.querySelector('[role="button"]') as HTMLElement | null;
-
-  if (urlRow && moreBtn) {
-    urlRow.insertBefore(host, moreBtn);
-  } else if (urlRow) {
-    urlRow.appendChild(host);
-  } else {
-    blockEl.insertBefore(host, blockEl.firstChild);
-  }
-
+function mountStars(host: HTMLElement, score: number, reason: string) {
   const shadow = host.attachShadow({ mode: 'open' });
   const container = document.createElement('span');
   shadow.appendChild(container);
-
   const root = createRoot(container);
   root.render(<Stars stars={scoreToStars(score)} reason={reason} />);
-
   mountedHosts.add(host);
   roots.push(root);
+}
+
+function injectStars(blockEl: HTMLElement, score: number, reason: string) {
+  if (blockEl.querySelector('[data-clican="stars"]')) return;
+
+  const host = document.createElement('div');
+  host.dataset.clican = 'stars';
+  host.style.display = 'block';
+  host.style.margin = '6px 0';
+  blockEl.insertBefore(host, blockEl.firstChild);
+
+  mountStars(host, score, reason);
 }
 
 async function run() {
@@ -55,7 +44,7 @@ async function run() {
   }
 
   const request: AnalyzeRequest = {
-    query: extractQuery(),
+    keyword: extractQuery(),
     results: parsed.map((p) => p.dto),
   };
   console.log('[Clican] sending request:', request);

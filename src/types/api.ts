@@ -6,7 +6,7 @@ export interface SearchResultDto {
 }
 
 export interface AnalyzeRequest {
-  query?: string;
+  keyword: string;
   results: SearchResultDto[];
 }
 
