@@ -8,17 +8,29 @@ import type { RuntimeMessage, RuntimeResponse } from '@/types/messages';
 const mountedHosts = new WeakSet<HTMLElement>();
 const roots: Root[] = [];
 
-function mountStars(host: HTMLElement, score: number, reason: string) {
+function mountStars(
+  host: HTMLElement,
+  score: number,
+  reason: string,
+  tags: string[],
+) {
   const shadow = host.attachShadow({ mode: 'open' });
   const container = document.createElement('span');
   shadow.appendChild(container);
   const root = createRoot(container);
-  root.render(<Stars stars={scoreToStars(score)} reason={reason} />);
+  root.render(
+    <Stars stars={scoreToStars(score)} reason={reason} tags={tags} />,
+  );
   mountedHosts.add(host);
   roots.push(root);
 }
 
-function injectStars(blockEl: HTMLElement, score: number, reason: string) {
+function injectStars(
+  blockEl: HTMLElement,
+  score: number,
+  reason: string,
+  tags: string[],
+) {
   if (blockEl.querySelector('[data-clican="stars"]')) return;
 
   const host = document.createElement('div');
@@ -27,7 +39,7 @@ function injectStars(blockEl: HTMLElement, score: number, reason: string) {
   host.style.margin = '6px 0';
   blockEl.insertBefore(host, blockEl.firstChild);
 
-  mountStars(host, score, reason);
+  mountStars(host, score, reason, tags);
 }
 
 async function run() {
@@ -68,7 +80,7 @@ async function run() {
   for (const trust of response.data.results) {
     const target = parsed[trust.index];
     if (!target) continue;
-    injectStars(target.container, trust.score, trust.reason);
+    injectStars(target.container, trust.score, trust.reason, trust.tags ?? []);
   }
   console.log('[Clican] injected', response.data.results.length, 'badges');
 }
